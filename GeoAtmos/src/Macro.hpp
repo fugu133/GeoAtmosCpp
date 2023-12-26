@@ -46,7 +46,7 @@
 #define GEOATMOS_REQUEST_VERSION_CHECK(major, minor, patch) \
 	(GEOATMOS_VERSION_MAJOR >= major && GEOATMOS_VERSION_MINOR >= minor && GEOATMOS_VERSION_PATCH >= patch)
 
-#define GEOATMOS_REQUEST_VERSION_ASSERTION_MSG_STR(major, minor, patch) "KOYOH-ACS-DataConverter-Lib must be has version higher than " GEOATMOS_TO_STRING(GEOATMOS_VERSION_CONCAT(major, minor, patch))
+#define GEOATMOS_REQUEST_VERSION_ASSERTION_MSG_STR(major, minor, patch) "GeoAtmos-Lib must be has version higher than " GEOATMOS_TO_STRING(GEOATMOS_VERSION_CONCAT(major, minor, patch))
 
 #ifndef GEOATMOS_NO_ASSERTION
 #define GEOATMOS_ASSRET_CONVERTER_REQUEST_VERSION(major, minor, patch) \
