@@ -420,11 +420,29 @@ class Radian : public Angle {
 	Radian(double angle) : Angle(angle, AngleUnit::Radian) {}
 };
 
-// class Hour : public Angle {
-//   public:
-// 	Hour() : Angle() {}
-// 	Hour(double angle) : Angle(angle, AngleUnit::Hour) {}
-// };
+class NormalizedAngle : public Angle {
+  public:
+	NormalizedAngle() : Angle() {}
+	NormalizedAngle(double angle) : Angle(constant::pi2 * angle, AngleUnit::Radian) {}
+};
+
+class DoyAngle : public Angle {
+  public:
+	DoyAngle() : Angle() {}
+	DoyAngle(double doy) : Angle(constant::pi2 * doy / constant::days_per_nonleap_year, AngleUnit::Radian) {}
+	DoyAngle(int year, double doy)
+	  : Angle(constant::pi2 * doy / (isLeapYear(year) ? constant::days_per_leap_year : constant::days_per_nonleap_year),
+			  AngleUnit::Radian) {}
+
+  private:
+	bool isLeapYear(int year) const { return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0; }
+};
+
+class HourAngle : public Angle {
+  public:
+	HourAngle() : Angle() {}
+	HourAngle(double angle) : Angle(angle, AngleUnit::Hour) {}
+};
 
 class Arcmin : public Angle {
   public:
