@@ -343,6 +343,14 @@ class DateTime {
 
 	friend auto operator<<(std::ostream& os, const DateTime& dt) -> std::ostream& { return os << dt.toString(); }
 
+	int dayOfYear() const {
+		int year, month, day;
+		pushDate(year, month, day);
+		return dayOfYear(year, month, day);
+	}
+
+	double secondsOfDay() const { return TimeSpan(m_ticks % constant::ticks_per_day).totalSeconds(); }
+
   private:
 	std::int64_t m_ticks;
 
