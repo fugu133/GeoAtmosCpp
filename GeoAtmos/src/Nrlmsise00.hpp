@@ -689,18 +689,18 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 			if (flags.sw[9] == -1) {
 				if (p[51]) {
 					t[12] = apt[0] * flags.swc[11] * (1. + p[132] * plg[0][1]) *
-							  ((p[52] * plg[1][2] + p[98] * plg[1][4] + p[67] * plg[1][6]) * std::cos(dgtr * (input.g_long - p[97]))) +
+							  ((p[52] * plg[1][2] + p[98] * plg[1][4] + p[67] * plg[1][6]) * Degree(input.g_long - p[97]).cos()) +
 							apt[0] * flags.swc[11] * flags.swc[5] * (p[133] * plg[1][1] + p[134] * plg[1][3] + p[135] * plg[1][5]) * cd14 *
-							  std::cos(dgtr * (input.g_long - p[136])) +
+							  Degree(input.g_long - p[136]).cos() +
 							apt[0] * flags.swc[12] * (p[55] * plg[0][1] + p[56] * plg[0][3] + p[57] * plg[0][5]) *
 							  std::cos(sr * (input.sec - p[58]));
 				}
 			} else {
 				t[12] =
 				  apdf * flags.swc[11] * (1.0 + p[120] * plg[0][1]) *
-					((p[60] * plg[1][2] + p[61] * plg[1][4] + p[62] * plg[1][6]) * std::cos(dgtr * (input.g_long - p[63]))) +
+					((p[60] * plg[1][2] + p[61] * plg[1][4] + p[62] * plg[1][6]) * Degree(input.g_long - p[63]).cos()) +
 				  apdf * flags.swc[11] * flags.swc[5] * (p[115] * plg[1][1] + p[116] * plg[1][3] + p[117] * plg[1][5]) * cd14 *
-					std::cos(dgtr * (input.g_long - p[118])) +
+					Degree(input.g_long - p[118]).cos() +
 				  apdf * flags.swc[12] * (p[83] * plg[0][1] + p[84] * plg[0][3] + p[85] * plg[0][5]) * std::cos(sr * (input.sec - p[75]));
 			}
 		}
@@ -720,7 +720,7 @@ double Nrlmsise::glob7s(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 	double tt;
 	double cd32, cd18, cd14, cd39;
 	constexpr double dr = 1.72142E-2;
-	constexpr double dgtr = 1.74533E-2;
+	// constexpr double dgtr = 1.74533E-2;
 
 	/* confirm parameter set */
 	if (p[99] == 0) p[99] = pset;
@@ -787,9 +787,9 @@ double Nrlmsise::glob7s(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 			 (p[80] * flags.swc[5] * std::cos(dr * (input.doy - p[81])) + p[85] * flags.swc[6] * std::cos(2.0 * dr * (input.doy - p[86]))) +
 		   p[83] * flags.swc[3] * std::cos(dr * (input.doy - p[84])) + p[87] * flags.swc[4] * std::cos(2.0 * dr * (input.doy - p[88]))) *
 		  ((p[64] * plg[1][2] + p[65] * plg[1][4] + p[66] * plg[1][6] + p[74] * plg[1][1] + p[75] * plg[1][3] + p[76] * plg[1][5]) *
-			 std::cos(dgtr * input.g_long) +
+			 Degree(input.g_long).cos() +
 		   (p[90] * plg[1][2] + p[91] * plg[1][4] + p[92] * plg[1][6] + p[77] * plg[1][1] + p[78] * plg[1][3] + p[79] * plg[1][5]) *
-			 std::sin(dgtr * input.g_long));
+			 Degree(input.g_long).sin());
 	}
 	tt = 0;
 	for (int i = 0; i < 14; i++) tt += std::fabs(flags.sw[i + 1]) * t[i];
@@ -1017,7 +1017,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	double rc16, rc32, rc01, rc14;
 	double rl;
 	double g16h, db16h, tho, zsht, zmho, zsho;
-	double dgtr = 1.74533E-2;
+	// double dgtr = 1.74533E-2;
 	double dr = 1.72142E-2;
 	double alpha[9] = {-0.38, 0.0, 0.0, 0.0, 0.17, 0.0, -0.38, 0.0, 0.0};
 	double altl[8] = {200.0, 300.0, 160.0, 250.0, 240.0, 450.0, 320.0, 450.0};
@@ -1064,7 +1064,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	g28 = flags.sw[21] * globe7(pd[2], input, flags);
 
 	/* VARIATION OF TURBOPAUSE HEIGHT */
-	zhf = pdl[1][24] * (1.0 + flags.sw[5] * pdl[0][24] * std::sin(dgtr * input.g_lat) * std::cos(dr * (input.doy - pt[13])));
+	zhf = pdl[1][24] * (1.0 + flags.sw[5] * pdl[0][24] * Degree(input.g_lat).sin() * std::cos(dr * (input.doy - pt[13])));
 	output.t[0] = tinf;
 	xmm = pdm[2][4];
 	z = input.alt;
