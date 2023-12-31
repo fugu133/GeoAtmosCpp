@@ -18,30 +18,6 @@
 
 GEOATMOS_NAMESPACE_BEGIN
 
-// struct nrlmsise_input {
-//     DateTime utc;
-//     Wgs84 position;
-// 	double lst;    /* 地方太陽日 */
-// 	double f107A;  /* F10.7 太陽束 (81日平均) */
-// 	double f107;   /* F10.7 太陽束 (全日) */
-// 	double ap;     /* 磁気指数 */
-// 	struct ap_array *ap_a; /* see above */
-// };
-
-// struct NrlmsiseOutput {
-//     double helium_density;
-//     double oxygen_density;
-//     double oxygen_density;
-//     double nitrogen_density;
-//     double nitrogen_density;
-//     double argon_density;
-//     double hydrogen_density;
-//     double air_density;
-//     double anomalous_oxygen_density;
-//     double exospheric_temperature;
-//     double temperature_at_altitude;
-// };
-
 struct NrlmsiseConfig {
 	int switches[24];
 	double sw[24];
@@ -53,17 +29,17 @@ struct ApArray {
 };
 
 struct NrlmsiseInput {
-	int year;	   /* year, currently ignored */
-	int doy;	   /* day of year */
-	double sec;	   /* seconds in day (UT) */
-	double alt;	   /* altitude in kilometers */
-	double g_lat;  /* geodetic latitude */
-	double g_long; /* geodetic longitude */
-	double lst;	   /* local apparent solar time (hours), see note below */
-	double f107A;  /* 81 day average of F10.7 flux (centered on doy) */
-	double f107;   /* daily F10.7 flux for previous day */
-	double ap;	   /* magnetic index(daily) */
-	ApArray ap_a;  /* see above */
+	int year;
+	int doy;
+	double sec;
+	double alt;
+	double g_lat;
+	double g_long;
+	double lst;
+	double f107A;
+	double f107;
+	double ap;
+	ApArray ap_a;
 };
 
 struct NrlmsiseOutput {
@@ -141,12 +117,6 @@ class Nrlmsise : public ModelSet {
 			   sumex(ex);
 	}
 };
-
-double Nrlmsise::zn1[5] = {120.0, 110.0, 100.0, 90.0, 72.5}; // unit km
-double Nrlmsise::zn2[4] = {72.5, 55.0, 45.0, 32.5};			 // unit km
-double Nrlmsise::zn3[5] = {32.5, 20.0, 15.0, 10.0, 0.0};	 // unit km
-double Nrlmsise::alpha[9] = {-0.38, 0.0, 0.0, 0.0, 0.17, 0.0, -0.38, 0.0, 0.0};
-double Nrlmsise::altl[8] = {200.0, 300.0, 160.0, 250.0, 240.0, 450.0, 320.0, 450.0};
 
 Nrlmsise::Nrlmsise() {}
 
@@ -310,7 +280,7 @@ double Nrlmsise::densm(double alt, double d0, double xm, double &tz, int mn3, do
 					   double *tn2, double *tgn2) {
 	/*      Calculate Temperature and Density Profiles for lower atmos.  */
 	double xs[10], ys[10], y2out[10];
-	double rgas = 831.4;
+	constexpr double rgas = 831.4;
 	double z, z1, z2, t1, t2, zg, zgdif;
 	double yd1, yd2;
 	double x, y, yi;
@@ -423,16 +393,12 @@ double Nrlmsise::densm(double alt, double d0, double xm, double &tz, int mn3, do
 
 double Nrlmsise::densu(double alt, double dlb, double tinf, double tlb, double xm, double alpha, double &tz, double zlb, double s2, int mn1,
 					   double *zn1, double *tn1, double *tgn1) {
-	/*      Calculate Temperature and Density Profiles for MSIS models
-	 *      New lower thermo polynomial
-	 */
+	constexpr double rgas = 831.4;
 	double yd2, yd1, x, y;
-	double rgas = 831.4;
 	double densu_temp = 1.0;
 	double za, z, zg2, tt, ta;
 	double dta, z1, z2, t1, t2, zg, zgdif;
 	int mn;
-	int k;
 	double glb;
 	double expl;
 	double yi;
@@ -471,7 +437,7 @@ double Nrlmsise::densu(double alt, double dlb, double tinf, double tlb, double x
 		zgdif = zeta(z2, z1);
 
 		/* set up spline nodes */
-		for (k = 0; k < mn; k++) {
+		for (int k = 0; k < mn; k++) {
 			xs[k] = zeta(zn1[k], z1) / zgdif;
 			ys[k] = 1.0 / tn1[k];
 		}
@@ -519,16 +485,10 @@ double Nrlmsise::densu(double alt, double dlb, double tinf, double tlb, double x
 }
 
 double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) {
-	/*       CALCULATE G(L) FUNCTION
-	 *       Upper Thermosphere Parameters */
 	double t[15];
 	double apd;
 	double tloc;
 	double c, s, c2, c4, s2;
-	// double sr = 7.2722E-5;
-	// double dgtr = 1.74533E-2;
-	// double dr = 1.72142E-2;
-	double hr = 0.2618;
 	double cd32, cd18, cd14, cd39;
 	double df;
 	double f1, f2;
@@ -571,12 +531,12 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 	plg[3][6] = (11.0 * c * plg[3][5] - 8. * plg[3][4]) / 3.0;
 
 	if (!(((flags.sw[7] == 0) && (flags.sw[8] == 0)) && (flags.sw[14] == 0))) {
-		stloc = std::sin(hr * tloc);
-		ctloc = std::cos(hr * tloc);
-		s2tloc = std::sin(2.0 * hr * tloc);
-		c2tloc = std::cos(2.0 * hr * tloc);
-		s3tloc = std::sin(3.0 * hr * tloc);
-		c3tloc = std::cos(3.0 * hr * tloc);
+		stloc = HourAngle(tloc).sin();
+		ctloc = HourAngle(tloc).cos();
+		s2tloc = HourAngle(2.0 * tloc).sin();
+		c2tloc = HourAngle(2.0 * tloc).cos();
+		s3tloc = HourAngle(3.0 * tloc).sin();
+		c3tloc = HourAngle(3.0 * tloc).cos();
 	}
 
 	cd32 = DoyAngle(input.doy - p[31]).cos();
@@ -646,7 +606,7 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 				t[8] =
 				  apt[0] * (p[50] + p[96] * plg[0][2] + p[54] * plg[0][4] +
 							(p[125] * plg[0][1] + p[126] * plg[0][3] + p[127] * plg[0][5]) * cd14 * flags.swc[5] +
-							(p[128] * plg[1][1] + p[129] * plg[1][3] + p[130] * plg[1][5]) * flags.swc[7] * std::cos(hr * (tloc - p[131])));
+							(p[128] * plg[1][1] + p[129] * plg[1][3] + p[130] * plg[1][5]) * flags.swc[7] * HourAngle(tloc - p[131]).cos());
 			}
 		}
 	} else {
@@ -659,7 +619,7 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 		if (flags.sw[9]) {
 			t[8] = apdf * (p[32] + p[45] * plg[0][2] + p[34] * plg[0][4] +
 						   (p[100] * plg[0][1] + p[101] * plg[0][3] + p[102] * plg[0][5]) * cd14 * flags.swc[5] +
-						   (p[121] * plg[1][1] + p[122] * plg[1][3] + p[123] * plg[1][5]) * flags.swc[7] * std::cos(hr * (tloc - p[124])));
+						   (p[121] * plg[1][1] + p[122] * plg[1][3] + p[123] * plg[1][5]) * flags.swc[7] * HourAngle(tloc - p[124]).cos());
 		}
 	}
 
@@ -717,7 +677,7 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 double Nrlmsise::glob7s(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) {
 	/*    VERSION OF GLOBE FOR LOWER ATMOSPHERE 10/26/99
 	 */
-	double pset = 2.0;
+	constexpr double pset = 2.0;
 	double t[14];
 	double tt;
 	double cd32, cd18, cd14, cd39;
@@ -807,7 +767,10 @@ void Nrlmsise::gtd7d(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput
 }
 
 void Nrlmsise::gtd7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput &output) {
-	constexpr double zmix = 62.5; // unit km
+	constexpr double zmix = 62.5;
+	double zn2[4] = {72.5, 55.0, 45.0, 32.5};
+	double zn3[5] = {32.5, 20.0, 15.0, 10.0, 0.0};
+
 	NrlmsiseOutput soutput;
 
 	/* Configure flags */
@@ -904,10 +867,10 @@ void Nrlmsise::gtd7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 }
 
 void Nrlmsise::ghp7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput &output, double press) {
-	double bm = 1.3806E-19;
-	double rgas = 831.4;
-	double test = 0.00043;
-	double ltest = 12;
+	constexpr double bm = 1.3806E-19;
+	constexpr double rgas = 831.4;
+	constexpr double test = 0.00043;
+	constexpr double ltest = 12;
 	double pl, p;
 	double zi;
 	double z;
@@ -991,16 +954,10 @@ void Nrlmsise::ghp7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 }
 
 void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput &output) {
-	/*     Thermospheric portion of NRLMSISE-00
-	 *     See GTD7 for more extensive comments
-	 *     alt > 72.5 km!
-	 */
 	double za;
-	int i, j;
 	double ddum, z;
 	double zn1[5] = {120.0, 110.0, 100.0, 90.0, 72.5};
 	double tinf;
-	int mn1 = 5;
 	double g0;
 	double tlb;
 	double s;
@@ -1019,8 +976,6 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	double rc16, rc32, rc01, rc14;
 	double rl;
 	double g16h, db16h, tho, zsht, zmho, zsho;
-	// double dgtr = 1.74533E-2;
-	// double dr = 1.72142E-2;
 	double alpha[9] = {-0.38, 0.0, 0.0, 0.0, 0.17, 0.0, -0.38, 0.0, 0.0};
 	double altl[8] = {200.0, 300.0, 160.0, 250.0, 240.0, 450.0, 320.0, 450.0};
 	double dd;
@@ -1028,7 +983,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 
 	za = pdl[1][15];
 	zn1[0] = za;
-	for (j = 0; j < 9; j++) output.d[j] = 0;
+	std::fill_n(output.d, std::size(output.d), 0);
 
 	/* TINF VARIATIONS NOT IMPORTANT BELOW ZA OR ZN1(1) */
 	if (input.alt > zn1[0])
@@ -1077,7 +1032,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	db28 = pdm[2][0] * std::exp(g28) * pd[2][0];
 
 	/* Diffusive density at Alt */
-	output.d[2] = densu(z, db28, tinf, tlb, 28.0, alpha[2], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	output.d[2] = densu(z, db28, tinf, tlb, 28.0, alpha[2], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	dd = output.d[2];
 
 	/* Turbopause */
@@ -1086,10 +1041,10 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	xmd = 28.0 - xmm;
 
 	/* Mixed density at Zlb */
-	b28 = densu(zh28, db28, tinf, tlb, xmd, (alpha[2] - 1.0), tz, ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	b28 = densu(zh28, db28, tinf, tlb, xmd, (alpha[2] - 1.0), tz, ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	if ((flags.sw[15]) && (z <= altl[2])) {
 		/*  Mixed density at Alt */
-		dm28 = densu(z, b28, tinf, tlb, xmm, alpha[2], tz, ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		dm28 = densu(z, b28, tinf, tlb, xmm, alpha[2], tz, ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		/*  Net density at Alt */
 		output.d[2] = dnet(output.d[2], dm28, zhm28, xmm, 28.0);
 	}
@@ -1103,15 +1058,15 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	db04 = pdm[0][0] * std::exp(g4) * pd[0][0];
 
 	/*  Diffusive density at Alt */
-	output.d[0] = densu(z, db04, tinf, tlb, 4., alpha[0], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	output.d[0] = densu(z, db04, tinf, tlb, 4., alpha[0], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	dd = output.d[0];
 	if ((flags.sw[15]) && (z < altl[0])) {
 		/*  Turbopause */
 		zh04 = pdm[0][2];
 		/*  Mixed density at Zlb */
-		b04 = densu(zh04, db04, tinf, tlb, 4. - xmm, alpha[0] - 1., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		b04 = densu(zh04, db04, tinf, tlb, 4. - xmm, alpha[0] - 1., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		/*  Mixed density at Alt */
-		dm04 = densu(z, b04, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		dm04 = densu(z, b04, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		zhm04 = zhm28;
 		/*  Net density at Alt */
 		output.d[0] = dnet(output.d[0], dm04, zhm04, xmm, 4.);
@@ -1130,15 +1085,15 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	/*  Diffusive density at Zlb */
 	db16 = pdm[1][0] * std::exp(g16) * pd[1][0];
 	/*   Diffusive density at Alt */
-	output.d[1] = densu(z, db16, tinf, tlb, 16., alpha[1], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	output.d[1] = densu(z, db16, tinf, tlb, 16., alpha[1], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	dd = output.d[1];
 	if ((flags.sw[15]) && (z <= altl[1])) {
 		/*   Turbopause */
 		zh16 = pdm[1][2];
 		/*  Mixed density at Zlb */
-		b16 = densu(zh16, db16, tinf, tlb, 16.0 - xmm, (alpha[1] - 1.0), output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		b16 = densu(zh16, db16, tinf, tlb, 16.0 - xmm, (alpha[1] - 1.0), output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		/*  Mixed density at Alt */
-		dm16 = densu(z, b16, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		dm16 = densu(z, b16, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		zhm16 = zhm28;
 		/*  Net density at Alt */
 		output.d[1] = dnet(output.d[1], dm16, zhm16, xmm, 16.);
@@ -1164,16 +1119,16 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	db32 = pdm[3][0] * std::exp(g32) * pd[4][0];
 
 	/*   Diffusive density at Alt */
-	output.d[3] = densu(z, db32, tinf, tlb, 32., alpha[3], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	output.d[3] = densu(z, db32, tinf, tlb, 32., alpha[3], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	dd = output.d[3];
 	if (flags.sw[15]) {
 		if (z <= altl[3]) {
 			/*   Turbopause */
 			zh32 = pdm[3][2];
 			/*  Mixed density at Zlb */
-			b32 = densu(zh32, db32, tinf, tlb, 32. - xmm, alpha[3] - 1., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+			b32 = densu(zh32, db32, tinf, tlb, 32. - xmm, alpha[3] - 1., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 			/*  Mixed density at Alt */
-			dm32 = densu(z, b32, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+			dm32 = densu(z, b32, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 			zhm32 = zhm28;
 			/*  Net density at Alt */
 			output.d[3] = dnet(output.d[3], dm32, zhm32, xmm, 32.);
@@ -1183,6 +1138,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 			zc32 = pdm[3][4] * pdl[1][6];
 			output.d[3] = output.d[3] * ccor(z, rl, hc32, zc32);
 		}
+
 		/*  Correction for general departure from diffusive equilibrium above Zlb */
 		hcc32 = pdm[3][7] * pdl[1][22];
 		hcc232 = pdm[3][7] * pdl[0][22];
@@ -1199,15 +1155,15 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	/*  Diffusive density at Zlb */
 	db40 = pdm[4][0] * exp(g40) * pd[5][0];
 	/*   Diffusive density at Alt */
-	output.d[4] = densu(z, db40, tinf, tlb, 40., alpha[4], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	output.d[4] = densu(z, db40, tinf, tlb, 40., alpha[4], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	dd = output.d[4];
 	if ((flags.sw[15]) && (z <= altl[4])) {
 		/*   Turbopause */
 		zh40 = pdm[4][2];
 		/*  Mixed density at Zlb */
-		b40 = densu(zh40, db40, tinf, tlb, 40. - xmm, alpha[4] - 1., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		b40 = densu(zh40, db40, tinf, tlb, 40. - xmm, alpha[4] - 1., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		/*  Mixed density at Alt */
-		dm40 = densu(z, b40, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		dm40 = densu(z, b40, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		zhm40 = zhm28;
 		/*  Net density at Alt */
 		output.d[4] = dnet(output.d[4], dm40, zhm40, xmm, 40.);
@@ -1226,15 +1182,15 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	/*  Diffusive density at Zlb */
 	db01 = pdm[5][0] * std::exp(g1) * pd[6][0];
 	/*   Diffusive density at Alt */
-	output.d[6] = densu(z, db01, tinf, tlb, 1., alpha[6], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	output.d[6] = densu(z, db01, tinf, tlb, 1., alpha[6], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	dd = output.d[6];
 	if ((flags.sw[15]) && (z <= altl[6])) {
 		/*   Turbopause */
 		zh01 = pdm[5][2];
 		/*  Mixed density at Zlb */
-		b01 = densu(zh01, db01, tinf, tlb, 1. - xmm, alpha[6] - 1., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		b01 = densu(zh01, db01, tinf, tlb, 1. - xmm, alpha[6] - 1., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		/*  Mixed density at Alt */
-		dm01 = densu(z, b01, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		dm01 = densu(z, b01, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		zhm01 = zhm28;
 		/*  Net density at Alt */
 		output.d[6] = dnet(output.d[6], dm01, zhm01, xmm, 1.);
@@ -1258,15 +1214,15 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	/*  Diffusive density at Zlb */
 	db14 = pdm[6][0] * std::exp(g14) * pd[7][0];
 	/*   Diffusive density at Alt */
-	output.d[7] = densu(z, db14, tinf, tlb, 14., alpha[7], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	output.d[7] = densu(z, db14, tinf, tlb, 14., alpha[7], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	dd = output.d[7];
 	if ((flags.sw[15]) && (z <= altl[7])) {
 		/*   Turbopause */
 		zh14 = pdm[6][2];
 		/*  Mixed density at Zlb */
-		b14 = densu(zh14, db14, tinf, tlb, 14. - xmm, alpha[7] - 1., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		b14 = densu(zh14, db14, tinf, tlb, 14. - xmm, alpha[7] - 1., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		/*  Mixed density at Alt */
-		dm14 = densu(z, b14, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+		dm14 = densu(z, b14, tinf, tlb, xmm, 0., output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 		zhm14 = zhm28;
 		/*  Net density at Alt */
 		output.d[7] = dnet(output.d[7], dm14, zhm14, xmm, 14.);
@@ -1288,7 +1244,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	g16h = flags.sw[21] * globe7(pd[8], input, flags);
 	db16h = pdm[7][0] * std::exp(g16h) * pd[8][0];
 	tho = pdm[7][9] * pdl[0][6];
-	dd = densu(z, db16h, tho, tho, 16., alpha[8], output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	dd = densu(z, db16h, tho, tho, 16., alpha[8], output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	zsht = pdm[7][5];
 	zmho = pdm[7][4];
 	zsho = scalh(zmho, 16.0, tho);
@@ -1300,10 +1256,10 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 
 	/* temperature */
 	z = std::sqrt(input.alt * input.alt);
-	ddum = densu(z, 1.0, tinf, tlb, 0.0, 0.0, output.t[1], ptm[5], s, mn1, zn1, meso_tn1, meso_tgn1);
+	ddum = densu(z, 1.0, tinf, tlb, 0.0, 0.0, output.t[1], ptm[5], s, std::size(zn1), zn1, meso_tn1, meso_tgn1);
 	(void)ddum; /* silence gcc */
 	if (flags.sw[0]) {
-		for (i = 0; i < 9; i++) output.d[i] = output.d[i] * 1.0E6;
+		for (int i = 0; i < 9; i++) output.d[i] = output.d[i] * 1.0E6;
 		output.d[5] = output.d[5] / 1000;
 	}
 }
