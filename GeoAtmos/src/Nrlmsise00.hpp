@@ -525,8 +525,8 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 	double apd;
 	double tloc;
 	double c, s, c2, c4, s2;
-	double sr = 7.2722E-5;
-	double dgtr = 1.74533E-2;
+	// double sr = 7.2722E-5;
+	// double dgtr = 1.74533E-2;
 	// double dr = 1.72142E-2;
 	double hr = 0.2618;
 	double cd32, cd18, cd14, cd39;
@@ -679,9 +679,11 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 		/* ut and mixed ut, longitude */
 		if (flags.sw[12]) {
 			t[11] = (1.0 + p[95] * plg[0][1]) * (1.0 + p[81] * dfa * flags.swc[1]) * (1.0 + p[119] * plg[0][1] * flags.swc[5] * cd14) *
-					((p[68] * plg[0][1] + p[69] * plg[0][3] + p[70] * plg[0][5]) * std::cos(sr * (input.sec - p[71])));
+					((p[68] * plg[0][1] + p[69] * plg[0][3] + p[70] * plg[0][5]) *
+					 NormalizedAngle((input.sec - p[71]) / constant::seconds_per_day).cos());
 			t[11] += flags.swc[11] * (p[76] * plg[2][3] + p[77] * plg[2][5] + p[78] * plg[2][7]) *
-					 std::cos(sr * (input.sec - p[79]) + 2.0 * dgtr * input.g_long) * (1.0 + p[137] * dfa * flags.swc[1]);
+					 (NormalizedAngle((input.sec - p[79]) / constant::seconds_per_day) + 2.0 * Degree(input.g_long)).cos() *
+					 (1.0 + p[137] * dfa * flags.swc[1]);
 		}
 
 		/* ut, longitude magnetic activity */
@@ -693,15 +695,15 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 							apt[0] * flags.swc[11] * flags.swc[5] * (p[133] * plg[1][1] + p[134] * plg[1][3] + p[135] * plg[1][5]) * cd14 *
 							  Degree(input.g_long - p[136]).cos() +
 							apt[0] * flags.swc[12] * (p[55] * plg[0][1] + p[56] * plg[0][3] + p[57] * plg[0][5]) *
-							  std::cos(sr * (input.sec - p[58]));
+							  NormalizedAngle((input.sec - p[58]) / constant::seconds_per_day).cos();
 				}
 			} else {
-				t[12] =
-				  apdf * flags.swc[11] * (1.0 + p[120] * plg[0][1]) *
-					((p[60] * plg[1][2] + p[61] * plg[1][4] + p[62] * plg[1][6]) * Degree(input.g_long - p[63]).cos()) +
-				  apdf * flags.swc[11] * flags.swc[5] * (p[115] * plg[1][1] + p[116] * plg[1][3] + p[117] * plg[1][5]) * cd14 *
-					Degree(input.g_long - p[118]).cos() +
-				  apdf * flags.swc[12] * (p[83] * plg[0][1] + p[84] * plg[0][3] + p[85] * plg[0][5]) * std::cos(sr * (input.sec - p[75]));
+				t[12] = apdf * flags.swc[11] * (1.0 + p[120] * plg[0][1]) *
+						  ((p[60] * plg[1][2] + p[61] * plg[1][4] + p[62] * plg[1][6]) * Degree(input.g_long - p[63]).cos()) +
+						apdf * flags.swc[11] * flags.swc[5] * (p[115] * plg[1][1] + p[116] * plg[1][3] + p[117] * plg[1][5]) * cd14 *
+						  Degree(input.g_long - p[118]).cos() +
+						apdf * flags.swc[12] * (p[83] * plg[0][1] + p[84] * plg[0][3] + p[85] * plg[0][5]) *
+						  NormalizedAngle((input.sec - p[75]) / constant::seconds_per_day).cos();
 			}
 		}
 	}
@@ -1043,8 +1045,8 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	tlb = ptm[1] * (1.0 + flags.sw[17] * globe7(pd[3], input, flags)) * pd[3][0];
 	s = g0 / (tinf - tlb);
 
-	/*      Lower thermosphere temp variations not significant for
-	 *       density above 300 km */
+	/* Lower thermosphere temp variations not significant for
+	 * density above 300 km */
 	if (input.alt < 300.0) {
 		meso_tn1[1] = ptm[6] * ptl[0][0] / (1.0 - flags.sw[18] * glob7s(ptl[0], input, flags));
 		meso_tn1[2] = ptm[2] * ptl[1][0] / (1.0 - flags.sw[18] * glob7s(ptl[1], input, flags));
