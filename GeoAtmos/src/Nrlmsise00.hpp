@@ -527,7 +527,7 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 	double c, s, c2, c4, s2;
 	double sr = 7.2722E-5;
 	double dgtr = 1.74533E-2;
-	double dr = 1.72142E-2;
+	// double dr = 1.72142E-2;
 	double hr = 0.2618;
 	double cd32, cd18, cd14, cd39;
 	double df;
@@ -579,10 +579,10 @@ double Nrlmsise::globe7(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 		c3tloc = std::cos(3.0 * hr * tloc);
 	}
 
-	cd32 = std::cos(dr * (input.doy - p[31]));
-	cd18 = std::cos(2.0 * dr * (input.doy - p[17]));
-	cd14 = std::cos(dr * (input.doy - p[13]));
-	cd39 = std::cos(2.0 * dr * (input.doy - p[38]));
+	cd32 = DoyAngle(input.doy - p[31]).cos();
+	cd18 = DoyAngle(2.0 * (input.doy - p[17])).cos();
+	cd14 = DoyAngle(input.doy - p[13]).cos();
+	cd39 = DoyAngle(2.0 * (input.doy - p[38])).cos();
 
 	/* F10.7 EFFECT */
 	df = input.f107 - input.f107A;
@@ -719,7 +719,7 @@ double Nrlmsise::glob7s(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 	double t[14];
 	double tt;
 	double cd32, cd18, cd14, cd39;
-	constexpr double dr = 1.72142E-2;
+	// constexpr double dr = 1.72142E-2;
 	// constexpr double dgtr = 1.74533E-2;
 
 	/* confirm parameter set */
@@ -729,10 +729,10 @@ double Nrlmsise::glob7s(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 		return -1;
 	}
 	std::fill_n(t, 14, 0.0);
-	cd32 = std::cos(dr * (input.doy - p[31]));
-	cd18 = std::cos(2.0 * dr * (input.doy - p[17]));
-	cd14 = std::cos(dr * (input.doy - p[13]));
-	cd39 = std::cos(2.0 * dr * (input.doy - p[38]));
+	cd32 = DoyAngle(input.doy - p[31]).cos();
+	cd18 = DoyAngle(2.0 * (input.doy - p[17])).cos();
+	cd14 = DoyAngle(input.doy - p[13]).cos();
+	cd39 = DoyAngle(2.0 * (input.doy - p[38])).cos();
 
 	/* F10.7 */
 	t[0] = p[21] * dfa;
@@ -784,8 +784,8 @@ double Nrlmsise::glob7s(double *p, NrlmsiseInput &input, NrlmsiseConfig &flags) 
 		t[10] =
 		  (1.0 +
 		   plg[0][1] *
-			 (p[80] * flags.swc[5] * std::cos(dr * (input.doy - p[81])) + p[85] * flags.swc[6] * std::cos(2.0 * dr * (input.doy - p[86]))) +
-		   p[83] * flags.swc[3] * std::cos(dr * (input.doy - p[84])) + p[87] * flags.swc[4] * std::cos(2.0 * dr * (input.doy - p[88]))) *
+			 (p[80] * flags.swc[5] * DoyAngle(input.doy - p[81]).cos() + p[85] * flags.swc[6] * DoyAngle(2.0 * (input.doy - p[86])).cos()) +
+		   p[83] * flags.swc[3] * DoyAngle(input.doy - p[84]).cos() + p[87] * flags.swc[4] * DoyAngle(2.0 * (input.doy - p[88])).cos()) *
 		  ((p[64] * plg[1][2] + p[65] * plg[1][4] + p[66] * plg[1][6] + p[74] * plg[1][1] + p[75] * plg[1][3] + p[76] * plg[1][5]) *
 			 Degree(input.g_long).cos() +
 		   (p[90] * plg[1][2] + p[91] * plg[1][4] + p[92] * plg[1][6] + p[77] * plg[1][1] + p[78] * plg[1][3] + p[79] * plg[1][5]) *
@@ -1018,7 +1018,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	double rl;
 	double g16h, db16h, tho, zsht, zmho, zsho;
 	// double dgtr = 1.74533E-2;
-	double dr = 1.72142E-2;
+	// double dr = 1.72142E-2;
 	double alpha[9] = {-0.38, 0.0, 0.0, 0.0, 0.17, 0.0, -0.38, 0.0, 0.0};
 	double altl[8] = {200.0, 300.0, 160.0, 250.0, 240.0, 450.0, 320.0, 450.0};
 	double dd;
@@ -1064,7 +1064,7 @@ void Nrlmsise::gts7(NrlmsiseInput &input, NrlmsiseConfig &flags, NrlmsiseOutput 
 	g28 = flags.sw[21] * globe7(pd[2], input, flags);
 
 	/* VARIATION OF TURBOPAUSE HEIGHT */
-	zhf = pdl[1][24] * (1.0 + flags.sw[5] * pdl[0][24] * Degree(input.g_lat).sin() * std::cos(dr * (input.doy - pt[13])));
+	zhf = pdl[1][24] * (1.0 + flags.sw[5] * pdl[0][24] * Degree(input.g_lat).sin() * DoyAngle(input.doy - pt[13]).cos());
 	output.t[0] = tinf;
 	xmm = pdm[2][4];
 	z = input.alt;
