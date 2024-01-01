@@ -10,8 +10,8 @@
 #pragma once
 
 // clang-format off
-#define GEOATMOS_VERSION_MAJOR 1
-#define GEOATMOS_VERSION_MINOR 0
+#define GEOATMOS_VERSION_MAJOR 0
+#define GEOATMOS_VERSION_MINOR 1
 #define GEOATMOS_VERSION_PATCH 0
 
 #define GEOATMOS_TO_STRING_EX(x) #x
