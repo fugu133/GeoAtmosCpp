@@ -17,8 +17,16 @@
 
 GEOATMOS_NAMESPACE_BEGIN
 
+/**
+ * @brief スイッチの状態
+ *
+ */
 enum class SwitchStatus : std::int8_t { Off, On, Specific };
 
+/**
+ * @brief NRLMSISE-00 のモデル設定
+ *
+ */
 struct ModelConfig {
 	SwitchStatus unit_conversion;
 	SwitchStatus f107_effect;
@@ -105,6 +113,10 @@ struct ModelConfig {
 	}
 };
 
+/**
+ * @brief 磁気指数 (Ap)
+ *
+ */
 struct MagneticIndex {
 	double ap[7];
 
@@ -114,16 +126,22 @@ struct MagneticIndex {
 	  : ap{ap_a, ap_kp, ap_ao, ap_ap, ap_ae, ap_al, ap_af} {}
 };
 
+enum class DensityUnit { GramPerCm3, KgPerM3, Cgs, Si };
+
+/**
+ * @brief 大気密度と温度
+ *
+ */
 struct Density {
-	double atomic_hydrogen;
-	double atomic_helium;
-	double atomic_nitrogen;
-	double atomic_oxygen;
-	double atomic_argon;
-	double molecular_nitrogen;
-	double molecular_oxygen;
-	double anomalous_oxygen;
-	double atmosphere;
+	double atomic_hydrogen;	   // 水素原子密度 [cm^-3 or /m^3]
+	double atomic_helium;	   // ヘリウム原子密度 [cm^-3 or /m^3]
+	double atomic_nitrogen;	   // 窒素原子密度 [cm^-3 or /m^3]
+	double atomic_oxygen;	   // 酸素原子密度 [cm^-3 or /m^3]
+	double atomic_argon;	   // アルゴン原子密度 [cm^-3 or /m^3]
+	double molecular_nitrogen; // 窒素分子密度 [cm^-3 or /m^3]
+	double molecular_oxygen;   // 酸素分子密度 [cm^-3 or /m^3]
+	double anomalous_oxygen;   // 異常酸素密度 [cm^-3 or /m^3]
+	double atmosphere;		   // 大気質量密度 [g/cm^3 or kg/m^3]
 
 	Density()
 	  : atomic_hydrogen(0),
@@ -135,6 +153,7 @@ struct Density {
 		molecular_oxygen(0),
 		anomalous_oxygen(0),
 		atmosphere(0) {}
+
 	Density(double atomic_hydrogen, double atomic_helium, double atomic_nitrogen, double atomic_oxygen, double atomic_argon,
 			double molecular_nitrogen, double molecular_oxygen, double anomalous_oxygen, double atmosphere)
 	  : atomic_hydrogen(atomic_hydrogen),
@@ -148,25 +167,39 @@ struct Density {
 		atmosphere(atmosphere) {}
 };
 
+/**
+ * @brief 大気密度と温度
+ *
+ */
 struct Temperature {
-	double at_exosphere;
-	double at_altitude;
+	double at_exosphere; // 外気圏での大気温度 [K]
+	double at_altitude;	 // 高度での大気温度 [K]
 
 	Temperature() : at_exosphere(0), at_altitude(0) {}
 	Temperature(double at_exosphere, double at_altitude) : at_exosphere(at_exosphere), at_altitude(at_altitude) {}
 };
 
+/**
+ * @brief 大気パラメータ
+ *
+ */
 struct AtmosphericParameters {
-	Density density;
-	Temperature temperature;
+	Density density;		 // 大気密度
+	Temperature temperature; // 大気温度
 
 	AtmosphericParameters() : density(), temperature() {}
 	AtmosphericParameters(const Density &density, const Temperature &temperature) : density(density), temperature(temperature) {}
 };
 
+/**
+ * @brief 地球大気モデル
+ *
+ */
 class GeoAtmosDensity : private internal::Nrlmsise {
   public:
 	GeoAtmosDensity() : Nrlmsise(), m_config() {}
+
+	GeoAtmosDensity(DensityUnit unit) : GeoAtmosDensity() { configureDensityUnit(unit); }
 
 	GeoAtmosDensity(const ModelConfig &config) : Nrlmsise(), m_config(config) {}
 
@@ -190,6 +223,16 @@ class GeoAtmosDensity : private internal::Nrlmsise {
 	AtmosphericParameters operator()(const Wgs84 &pos, double f107_average, double f107_daily, double ap);
 
 	void configureModel(const ModelConfig &config) { m_config = config; }
+
+	void configureDensityUnit(DensityUnit unit) {
+		switch (unit) {
+			case DensityUnit::GramPerCm3: m_config.unit_conversion = SwitchStatus::Off; break;
+			case DensityUnit::KgPerM3: m_config.unit_conversion = SwitchStatus::On; break;
+			case DensityUnit::Cgs: m_config.unit_conversion = SwitchStatus::Off; break;
+			case DensityUnit::Si: m_config.unit_conversion = SwitchStatus::On; break;
+			default: break;
+		}
+	}
 
   private:
 	ModelConfig m_config;
