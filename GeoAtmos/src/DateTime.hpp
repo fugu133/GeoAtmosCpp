@@ -1,6 +1,6 @@
 /**
  * @file DateTime.hpp
- * @author Kaiji Takeuchi (fugu0220@gmail.com)
+ * @author fugu133 (fugu0220@gmail.com)
  * @brief
  * @version 0.1
  * @date 2023-11-30
@@ -351,6 +351,10 @@ class DateTime {
 
 	double secondsOfDay() const { return TimeSpan(m_ticks % constant::ticks_per_day).totalSeconds(); }
 
+	static DateTime max() { return DateTime(std::numeric_limits<std::int64_t>::max()); }
+
+	static DateTime min() { return DateTime(0); }
+
   private:
 	std::int64_t m_ticks;
 
@@ -502,36 +506,40 @@ class DateTime {
 		year = iso8601BlocktoInt(date_time, 0, 4);
 		month = iso8601BlocktoInt(date_time, 5, 7);
 		day = iso8601BlocktoInt(date_time, 8, 10);
-		hour = iso8601BlocktoInt(date_time, 11, 13);
-		minute = iso8601BlocktoInt(date_time, 14, 16);
-
-		std::string sec_tz = date_time.substr(17);
-
-		// タイムゾーンの位置を探す
-		std::size_t tz_pos = 0;
-		while (tz_pos < sec_tz.length()) {
-			if (sec_tz[tz_pos] == 'Z' || sec_tz[tz_pos] == '+' || sec_tz[tz_pos] == '-') {
-				break;
-			}
-			tz_pos++;
-		}
-
-		iso8601BlocktoDecimal(sec_tz, 0, tz_pos - 1, second, microsecond);
-
-		if (tz_pos == sec_tz.length()) {
-			initialize(year, month, day, hour, minute, second, microsecond);
+		if (date_time.length() <= 10) {
+			initialize(year, month, day, 0, 0, 0, 0);
 		} else {
-			std::string tz = sec_tz.substr(tz_pos);
-			if (tz[0] == 'Z' || tz == "+00:00" || tz == "-00:00" || tz == "UTC" || tz == "GMT") {
+			hour = iso8601BlocktoInt(date_time, 11, 13);
+			minute = iso8601BlocktoInt(date_time, 14, 16);
+
+			std::string sec_tz = date_time.substr(17);
+
+			// タイムゾーンの位置を探す
+			std::size_t tz_pos = 0;
+			while (tz_pos < sec_tz.length()) {
+				if (sec_tz[tz_pos] == 'Z' || sec_tz[tz_pos] == '+' || sec_tz[tz_pos] == '-') {
+					break;
+				}
+				tz_pos++;
+			}
+
+			iso8601BlocktoDecimal(sec_tz, 0, tz_pos - 1, second, microsecond);
+
+			if (tz_pos == sec_tz.length()) {
 				initialize(year, month, day, hour, minute, second, microsecond);
 			} else {
-				int tz_hour = iso8601BlocktoInt(tz, 1, 3);
-				int tz_minute = iso8601BlocktoInt(tz, 4, 6);
-				initialize(year, month, day, hour, minute, second, microsecond);
-				if (tz[0] == '-') {
-					m_ticks += TimeSpan(tz_hour, tz_minute, 0).ticks();
+				std::string tz = sec_tz.substr(tz_pos);
+				if (tz[0] == 'Z' || tz == "+00:00" || tz == "-00:00" || tz == "UTC" || tz == "GMT") {
+					initialize(year, month, day, hour, minute, second, microsecond);
 				} else {
-					m_ticks -= TimeSpan(tz_hour, tz_minute, 0).ticks();
+					int tz_hour = iso8601BlocktoInt(tz, 1, 3);
+					int tz_minute = iso8601BlocktoInt(tz, 4, 6);
+					initialize(year, month, day, hour, minute, second, microsecond);
+					if (tz[0] == '-') {
+						m_ticks += TimeSpan(tz_hour, tz_minute, 0).ticks();
+					} else {
+						m_ticks -= TimeSpan(tz_hour, tz_minute, 0).ticks();
+					}
 				}
 			}
 		}

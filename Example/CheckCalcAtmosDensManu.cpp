@@ -1,3 +1,14 @@
+/**
+ * @file CheckCalcAtmosDens.cpp
+ * @author fugu133
+ * @brief 大気密度計算の確認
+ * @version 0.1
+ * @date 2024-01-03
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
+
 #include <GeoAtmos/Core.hpp>
 #include <fstream>
 using namespace geoatmos;

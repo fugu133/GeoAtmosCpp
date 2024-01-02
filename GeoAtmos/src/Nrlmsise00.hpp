@@ -1,6 +1,6 @@
 /**
  * @file Nrlmsise00.hpp
- * @author Kaiji Takeuchi
+ * @author fugu133
  * @brief NRLMSISE-00 Atmosphere Model
  * @ref https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSISE-00/
  * @ref https://ccmc.gsfc.nasa.gov/models/NRLMSIS~00/
@@ -16,57 +16,12 @@
 #include "AngleHelper.hpp"
 #include "Coordinate.hpp"
 #include "Essential.hpp"
+#include "GeoAtmosType.hpp"
 #include "Model.hpp"
 
 GEOATMOS_NAMESPACE_BEGIN
 
 namespace internal {
-
-	/**
-	 * @brief NRLMSISE-00 Atmosphere Model Configuration Switches
-	 *
-	 */
-	struct NrlmsiseConfig {
-		int switches[24];
-		double sw[24];
-		double swc[24];
-	};
-
-	/**
-	 * @brief NRLMSISE-00 Magnetic Activity aka AP
-	 *
-	 */
-	struct ApArray {
-		double a[7];
-	};
-
-	/**
-	 * @brief NRLMSISE-00 Atmosphere Model Input
-	 *
-	 */
-	struct NrlmsiseInput {
-		int year;
-		int doy;
-		double sec;
-		double alt;
-		double g_lat;
-		double g_long;
-		double lst;
-		double f107A;
-		double f107;
-		double ap;
-		ApArray ap_a;
-	};
-
-	/**
-	 * @brief NRLMSISE-00 Atmosphere Model Output
-	 *
-	 */
-	struct NrlmsiseOutput {
-		double d[9]; /* densities */
-		double t[2]; /* temperatures */
-	};
-
 	/**
 	 * @brief NRLMSISE-00 Atmosphere Model
 	 *

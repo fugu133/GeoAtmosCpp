@@ -1,10 +1,19 @@
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -Werror -pedantic -O2 -I../
+CXXFLAGS := -std=c++2a -Wall -Wextra -Werror -pedantic -O2 -I../
 
-all : example
+all : ccadm ccada crsd dlswdata
 
-example : Example.cpp
+ccadm : CheckCalcAtmosDensManu.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+ccada : CheckCalcAtmosDensAuto.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+crsd : CheckReadSwDataset.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 clean :
-	rm -f example
+	rm -f ccadm ccada crsd atmos.csv SW-Last5Years.csv
+
+dlswdata:
+	python3 DlSwDataset.py
