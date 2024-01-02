@@ -1,4 +1,5 @@
-# https://celestrak.org/SpaceData/SW-Last5Years.csv からダウンロード
+# https://celestrak.org/SpaceData/SW-Last5Years.csv 
+# から宇宙天気情報をダウンロード
 
 import requests
 
