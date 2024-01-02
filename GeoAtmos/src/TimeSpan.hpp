@@ -1,12 +1,12 @@
 /**
  * @file TimeSpan.hpp
- * @author Kaiji Takeuchi (fugu0220@gmail.com)
+ * @author fugu133 (fugu0220@gmail.com)
  * @brief 時間の長さを表すクラス
  * @remarks 最小単位はマイクロ秒
  * @version 0.1
  * @date 2023-11-30
  *
- * @copyright Copyright Kaiji Takeuchi(c) 2023
+ * @copyright Copyright fugu133(c) 2023
  *
  */
 

@@ -1,6 +1,6 @@
 /**
  * @file GlobalConstatnt.hpp
- * @author Kaiji Takeuchi
+ * @author fugu133
  * @brief
  * @version 0.1
  * @date 2023-11-27

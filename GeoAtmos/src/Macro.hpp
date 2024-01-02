@@ -1,6 +1,6 @@
 /**
  * @file Macro.hpp
- * @author Kaiji Takeuchi
+ * @author fugu133
  * @brief マクロ魔術
  * @version 0.1
  * @date 2023-04-30
