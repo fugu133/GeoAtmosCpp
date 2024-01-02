@@ -13,4 +13,4 @@ crsd : CheckReadSwDataset.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 clean :
-	rm -f ccadm ccada crsd
+	rm -f ccadm ccada crsd atmos.csv SW-Last5Years.csv
