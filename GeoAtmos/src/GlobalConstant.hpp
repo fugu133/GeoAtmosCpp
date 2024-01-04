@@ -155,6 +155,9 @@ namespace constant {
 		constexpr double qoms2t = 1.88027916e-9;	   // (qo - so) * ae / xkmper) ^ 4
 		constexpr double s = ae * (1.0 + so / xkmper); // s = ae*(1+f) = 1.01222928
 
+		/* physical constants */
+		constexpr double temperature_0degc_in_kelvin = 273.15; // [K]
+
 	} // namespace
 } // namespace constant
 GEOATMOS_NAMESPACE_END

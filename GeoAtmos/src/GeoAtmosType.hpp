@@ -74,7 +74,8 @@ enum class SwitchStatus : std::int8_t { Off, On, Specific };
  *
  */
 struct ModelConfig {
-	SwitchStatus unit_conversion;
+	SwitchStatus degc_unit_conversion;
+	SwitchStatus mks_unit_conversion;
 	SwitchStatus f107_effect;
 	SwitchStatus time_independent;
 	SwitchStatus symmetrical_annual;
@@ -100,7 +101,8 @@ struct ModelConfig {
 	SwitchStatus var_turbopause_scale_height;
 
 	ModelConfig()
-	  : unit_conversion(SwitchStatus::Off),
+	  : degc_unit_conversion(SwitchStatus::Off),
+		mks_unit_conversion(SwitchStatus::Off),
 		f107_effect(SwitchStatus::On),
 		time_independent(SwitchStatus::On),
 		symmetrical_annual(SwitchStatus::On),
@@ -127,7 +129,7 @@ struct ModelConfig {
 
 	internal::NrlmsiseConfig convertNativeStatus() const {
 		internal::NrlmsiseConfig config;
-		config.switches[0] = static_cast<int>(unit_conversion);
+		config.switches[0] = static_cast<int>(mks_unit_conversion);
 		config.switches[1] = static_cast<int>(f107_effect);
 		config.switches[2] = static_cast<int>(time_independent);
 		config.switches[3] = static_cast<int>(symmetrical_annual);
@@ -172,7 +174,8 @@ struct MagneticIndex {
 	  : ap{ap_a, ap_kp, ap_ao, ap_ap, ap_ae, ap_al, ap_af} {}
 };
 
-enum class DensityUnit { GramPerCm3, KgPerM3, Cgs, Si };
+enum class DensityUnit { GramPerCm3, KgPerM3, Cgs, Mks, Si };
+enum class TemperatureUnit { Kelvin, Celsius };
 
 /**
  * @brief 大気密度と温度
@@ -188,6 +191,7 @@ struct Density {
 	double molecular_oxygen;   // 酸素分子密度 [cm^-3 or /m^3]
 	double anomalous_oxygen;   // 異常酸素密度 [cm^-3 or /m^3]
 	double atmosphere;		   // 大気質量密度 [g/cm^3 or kg/m^3]
+	DensityUnit unit;		   // 密度の単位
 
 	Density()
 	  : atomic_hydrogen(0),
@@ -198,10 +202,11 @@ struct Density {
 		molecular_nitrogen(0),
 		molecular_oxygen(0),
 		anomalous_oxygen(0),
-		atmosphere(0) {}
+		atmosphere(0),
+		unit(DensityUnit::GramPerCm3) {}
 
 	Density(double atomic_hydrogen, double atomic_helium, double atomic_nitrogen, double atomic_oxygen, double atomic_argon,
-			double molecular_nitrogen, double molecular_oxygen, double anomalous_oxygen, double atmosphere)
+			double molecular_nitrogen, double molecular_oxygen, double anomalous_oxygen, double atmosphere, DensityUnit unit)
 	  : atomic_hydrogen(atomic_hydrogen),
 		atomic_helium(atomic_helium),
 		atomic_nitrogen(atomic_nitrogen),
@@ -210,7 +215,8 @@ struct Density {
 		molecular_nitrogen(molecular_nitrogen),
 		molecular_oxygen(molecular_oxygen),
 		anomalous_oxygen(anomalous_oxygen),
-		atmosphere(atmosphere) {}
+		atmosphere(atmosphere),
+		unit(unit) {}
 };
 
 /**
@@ -218,11 +224,13 @@ struct Density {
  *
  */
 struct Temperature {
-	double at_exosphere; // 外気圏での大気温度 [K]
-	double at_altitude;	 // 高度での大気温度 [K]
+	double at_exosphere;  // 外気圏での大気温度 [K]
+	double at_altitude;	  // 高度での大気温度 [K]
+	TemperatureUnit unit; // 温度の単位
 
-	Temperature() : at_exosphere(0), at_altitude(0) {}
-	Temperature(double at_exosphere, double at_altitude) : at_exosphere(at_exosphere), at_altitude(at_altitude) {}
+	Temperature() : at_exosphere(0), at_altitude(0), unit(TemperatureUnit::Kelvin) {}
+	Temperature(double at_exosphere, double at_altitude, TemperatureUnit unit)
+	  : at_exosphere(at_exosphere), at_altitude(at_altitude), unit(unit) {}
 };
 
 /**
