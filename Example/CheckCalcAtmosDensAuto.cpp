@@ -23,9 +23,9 @@ const auto latitude = Degree{35};
 int main() {
 	auto ofs = std::ofstream{"atmos.csv"};
 	auto sw_dataset = SpaceWeather{"SW-Last5Years.csv"};
-	auto atmos = GeoAtmosDensity{};
+	auto atmos = GeoAtmosDensity{DensityUnit::GramPerCm3, TemperatureUnit::Celsius};
 
-	ofs << "Altitude [km], Density [g/cm^3], Temperature [K]" << std::endl;
+	ofs << "Altitude [km], Density [g/cm^3], Temperature [deg C]" << std::endl;
 	for (auto alt = altitude_start_km; alt <= altitude_end_km; alt += 1.0) {
 		auto p = atmos(Wgs84{dt, longitude, latitude, alt * 1e3}, sw_dataset);
 		ofs << alt << ", " << p.density.atmosphere << ", " << p.temperature.at_altitude << std::endl;
