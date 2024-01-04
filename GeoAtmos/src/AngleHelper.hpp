@@ -231,6 +231,44 @@ class Angle {
 	}
 
 	/**
+	 * @brief 0 <= θ < 2π の範囲で正規化する
+	 *
+	 */
+	auto normalize() -> void { m_angle_radian = AngleHelper::wrapRadian(m_angle_radian); }
+
+	/**
+	 * @brief -π <= θ < π の範囲で正規化する
+	 *
+	 * @return Angle
+	 */
+	auto semiNormalize() -> void {
+		normalize();
+		if (m_angle_radian > constant::pi) {
+			m_angle_radian -= constant::pi2;
+		}
+	}
+
+	/**
+	 * @brief 0 <= θ < 2π の範囲で正規化した角度を返す
+	 *
+	 * @return Angle
+	 */
+	auto normalized() const -> Angle { return Angle(AngleHelper::wrapRadian(m_angle_radian), AngleUnit::Radian); }
+
+	/**
+	 * @brief -π <= θ < π の範囲で正規化した角度を返す
+	 *
+	 * @return Angle
+	 */
+	auto semiNormalized() const -> Angle {
+		auto angle = normalized();
+		if (angle.m_angle_radian > constant::pi) {
+			angle.m_angle_radian -= constant::pi2;
+		}
+		return angle;
+	}
+
+	/**
 	 * @brief 角度を文字列で返す
 	 *
 	 * @param unit 角度の単位
@@ -243,7 +281,7 @@ class Angle {
 		switch (unit) {
 			case AngleUnit::Degree: ss << degrees() << "°"; break;
 			case AngleUnit::Radian: ss << radians() << " rad"; break;
-			case AngleUnit::Hour: ss << hours() << "h"; break;
+			case AngleUnit::Hour: ss << hours() << " h"; break;
 			case AngleUnit::Arcmin: ss << arcmins() << "'"; break;
 			case AngleUnit::Arcsec: ss << arcsecs() << R"(")"; break;
 			case AngleUnit::Hms: {
